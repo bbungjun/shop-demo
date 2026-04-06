@@ -48,11 +48,19 @@ jobs:
             exit 1
           fi
 
+      - name: Normalize workflow inputs
+        run: |
+          echo "AWS_REGION=$(echo '${{ vars.AWS_REGION }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_ENV"
+          echo "EKS_CLUSTER_NAME=$(echo '${{ vars.EKS_CLUSTER_NAME }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_ENV"
+          echo "ECR_WEB_REPOSITORY=$(echo '${{ vars.ECR_WEB_REPOSITORY }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_ENV"
+          echo "ECR_API_REPOSITORY=$(echo '${{ vars.ECR_API_REPOSITORY }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_ENV"
+          echo "K8S_NAMESPACE=$(echo '${{ vars.K8S_NAMESPACE || 'shopping-demo' }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_ENV"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -85,7 +93,7 @@ jobs:
             ${{ steps.vars.outputs.registry }}/${{ vars.ECR_API_REPOSITORY }}:latest
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name "${{ vars.EKS_CLUSTER_NAME }}" --region "${{ vars.AWS_REGION }}"
+        run: aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
 
       - name: Apply base manifests
         run: kubectl apply -k k8s
