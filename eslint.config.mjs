@@ -31,4 +31,18 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ["k6/**/*.js"],
+    languageOptions: {
+      globals: {
+        __ENV: "readonly",
+      },
+    },
+  },
+  {
+    files: ["mock-api/**/*.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 )
