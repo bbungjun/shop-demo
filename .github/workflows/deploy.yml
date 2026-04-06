@@ -87,8 +87,6 @@ jobs:
           fi
           if [ -n "${{ github.event.inputs.api_image_tag }}" ]; then
             echo "api_tag=$(echo '${{ github.event.inputs.api_image_tag }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_OUTPUT"
-          else
-            echo "api_tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build and push web image
@@ -124,11 +122,15 @@ jobs:
           kubectl set image deployment/shopping-web \
             shopping-web=${{ steps.vars.outputs.registry }}/${{ vars.ECR_WEB_REPOSITORY }}:${{ steps.vars.outputs.web_tag }} \
             -n "$K8S_NAMESPACE"
-          kubectl set image deployment/shopping-api \
-            shopping-api=${{ steps.vars.outputs.registry }}/${{ vars.ECR_API_REPOSITORY }}:${{ steps.vars.outputs.api_tag }} \
-            -n "$K8S_NAMESPACE"
+          if [ -n "${{ steps.vars.outputs.api_tag }}" ]; then
+            kubectl set image deployment/shopping-api \
+              shopping-api=${{ steps.vars.outputs.registry }}/${{ vars.ECR_API_REPOSITORY }}:${{ steps.vars.outputs.api_tag }} \
+              -n "$K8S_NAMESPACE"
+          fi
 
       - name: Wait for rollout
         run: |
           kubectl rollout status deployment/shopping-web -n "$K8S_NAMESPACE" --timeout=300s
-          kubectl rollout status deployment/shopping-api -n "$K8S_NAMESPACE" --timeout=300s
+          if [ -n "${{ steps.vars.outputs.api_tag }}" ]; then
+            kubectl rollout status deployment/shopping-api -n "$K8S_NAMESPACE" --timeout=300s
+          fi
