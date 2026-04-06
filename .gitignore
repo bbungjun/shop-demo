@@ -1,0 +1,41 @@
+# v0 sandbox internal files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+.snowflake/
+.v0-trash/
+.vercel/
+next.user-config.*
+
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.next/
+.DS_Store
+.부하테스트.txt
+.codex.md
+.terraform/
+**/.terraform/
+*.exe
+**/*.exe
+.terraform/
+**/.terraform/
+*.exe
+**/*.exe
+terraform.tfstate*
+node_modules/
+dist/
+.env
+
+# Local planning and presentation docs
+CI_CD.md
+INFRA_K8S_SUMMARY.md
+PROJECT_PROGRESS.md
+DAY3.md
+CONTAINER_INFRA_MVP_PLAN.md
+TERRAFORM_EKS_DIRECTION.md
+TERRAFORM_INFRASTRUCTURE.md
+codex.md
+alb-trust-policy.json

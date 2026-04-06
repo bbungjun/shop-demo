@@ -1,0 +1,24 @@
+{
+  "ServiceName": "shopping-web-v3",
+  "SourceConfiguration": {
+    "ImageRepository": {
+      "ImageIdentifier": "486053612615.dkr.ecr.us-west-2.amazonaws.com/shopping-web:latest",
+      "ImageRepositoryType": "ECR",
+      "ImageConfiguration": {
+        "Port": "3000"
+      }
+    },
+    "AuthenticationConfiguration": {
+      "AccessRoleArn": "arn:aws:iam::486053612615:role/service-role/AppRunnerECRAccessRole"
+    },
+    "AutoDeploymentsEnabled": false
+  },
+  "HealthCheckConfiguration": {
+    "Protocol": "HTTP",
+    "Path": "/api/health",
+    "Interval": 5,
+    "Timeout": 5,
+    "HealthyThreshold": 1,
+    "UnhealthyThreshold": 3
+  }
+}

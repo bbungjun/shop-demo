@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopping-web
+  namespace: shopping-demo
+  labels:
+    app: shopping-web
+spec:
+  type: ClusterIP
+  selector:
+    app: shopping-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
