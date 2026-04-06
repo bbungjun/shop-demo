@@ -5,6 +5,15 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      web_image_tag:
+        description: Web image tag to deploy. Leave empty to use the current commit SHA.
+        required: false
+        type: string
+      api_image_tag:
+        description: API image tag to deploy. Leave empty to use the current commit SHA.
+        required: false
+        type: string
 
 permissions:
   id-token: write
@@ -71,8 +80,19 @@ jobs:
         run: |
           echo "sha_tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           echo "registry=${{ steps.login-ecr.outputs.registry }}" >> "$GITHUB_OUTPUT"
+          if [ -n "${{ github.event.inputs.web_image_tag }}" ]; then
+            echo "web_tag=$(echo '${{ github.event.inputs.web_image_tag }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_OUTPUT"
+          else
+            echo "web_tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "${{ github.event.inputs.api_image_tag }}" ]; then
+            echo "api_tag=$(echo '${{ github.event.inputs.api_image_tag }}' | tr -d '\r\n' | xargs)" >> "$GITHUB_OUTPUT"
+          else
+            echo "api_tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build and push web image
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.web_image_tag == '' }}
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -83,6 +103,7 @@ jobs:
             ${{ steps.vars.outputs.registry }}/${{ vars.ECR_WEB_REPOSITORY }}:latest
 
       - name: Build and push api image
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.api_image_tag == '' }}
         uses: docker/build-push-action@v6
         with:
           context: ./mock-api
@@ -101,10 +122,10 @@ jobs:
       - name: Update deployment images
         run: |
           kubectl set image deployment/shopping-web \
-            shopping-web=${{ steps.vars.outputs.registry }}/${{ vars.ECR_WEB_REPOSITORY }}:${{ steps.vars.outputs.sha_tag }} \
+            shopping-web=${{ steps.vars.outputs.registry }}/${{ vars.ECR_WEB_REPOSITORY }}:${{ steps.vars.outputs.web_tag }} \
             -n "$K8S_NAMESPACE"
           kubectl set image deployment/shopping-api \
-            shopping-api=${{ steps.vars.outputs.registry }}/${{ vars.ECR_API_REPOSITORY }}:${{ steps.vars.outputs.sha_tag }} \
+            shopping-api=${{ steps.vars.outputs.registry }}/${{ vars.ECR_API_REPOSITORY }}:${{ steps.vars.outputs.api_tag }} \
             -n "$K8S_NAMESPACE"
 
       - name: Wait for rollout
