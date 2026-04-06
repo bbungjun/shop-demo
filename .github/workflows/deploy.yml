@@ -130,7 +130,7 @@ jobs:
 
       - name: Wait for rollout
         run: |
-          kubectl rollout status deployment/shopping-web -n "$K8S_NAMESPACE" --timeout=300s
+          kubectl rollout status deployment/shopping-web -n "$K8S_NAMESPACE" --timeout=90s
           if [ -n "${{ steps.vars.outputs.api_tag }}" ]; then
             kubectl rollout status deployment/shopping-api -n "$K8S_NAMESPACE" --timeout=300s
           fi
